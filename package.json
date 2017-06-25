@@ -1,7 +1,7 @@
 {
   "name": "starbound-autocomplete-lua",
   "main": "lib/index.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A lua autocomplete porivder that also includes starbound's lua api and it's documentation.",
   "license": "MIT",
   "repository": "https://github.com/C0bra5/starbound-autocomplete-lua",
