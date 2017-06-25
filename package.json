@@ -1,7 +1,7 @@
 {
   "name": "starbound-autocomplete-lua",
   "main": "lib/index.js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A lua autocomplete porivder that also includes starbound's lua api and it's documentation.",
   "license": "MIT",
   "repository": "https://github.com/C0bra5/starbound-autocomplete-lua",
@@ -15,7 +15,7 @@
   "dependencies": {
     "lodash.clonedeepwith": "^4.5.0",
     "lodash.includes": "^4.3.0",
-	"luaparse" : "git://github.com/C0bra5/luaparse.git#commit-ish"
+    "luaparse": "git://github.com/C0bra5/luaparse.git#commit-ish"
   },
   "devDependencies": {
     "babel-eslint": "^7.0.0",
