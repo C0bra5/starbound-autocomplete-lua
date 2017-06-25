@@ -15,6 +15,7 @@
   "dependencies": {
     "lodash.clonedeepwith": "^4.5.0",
     "lodash.includes": "^4.3.0"
+	"luaparse" : "C0bra5/luaparse"
   },
   "devDependencies": {
     "babel-eslint": "^7.0.0",
