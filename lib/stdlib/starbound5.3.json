@@ -1784,7 +1784,7 @@
 					},
 					"jumping" : {
 						"type": "function",
-						"description": "`doesn't work in vehile and projectile scripts`\n\nReturns whether the controller can currently jump.",
+						"description": "`doesn't work in vehile and projectile scripts`\n\nReturns whether the controller is currently jumping.",
 						"args": [],
 						"returnTypes" : ["bool"]
 					},
