@@ -12,18 +12,18 @@
 				"description": "Calls error if the value of its argument v is false (i.e., nil or false); otherwise, returns all its arguments. In case of error, message is the error object; when absent, it defaults to \"assertion failed!\"",
 				"type": "function",
 				"args": [
-					{
-						"name": "v"
-					}
-				],
-				"argsDisplay": "v [, message]"
+					{ "name": "v" },
+					{ "name": "message", "optional" : true }
+				]
 			},
 			"collectgarbage": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-collectgarbage",
 				"description": "This function is a generic interface to the garbage collector. It performs different functions according to its first argument, opt:",
 				"type": "function",
-				"args": [],
-				"argsDisplay": "[opt [, arg]]"
+				"args": [
+					{"name" : "opt", "optional" : true},
+					{"name" : "arg", "optional" : true}
+				]
 			},
 			"error": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-error",
@@ -40,158 +40,166 @@
 				"description": "If object does not have a metatable, returns nil. Otherwise, if the object's metatable has a __metatable field, returns the associated value. Otherwise, returns the metatable of the given object.",
 				"type": "function",
 				"args": [
-					{
-						"name": "object"
-					}
+					{ "type" : "table", "name": "object" }
 				],
-				"argsDisplay": "object"
+				"returnTypes" : ["table"]
 			},
 			"ipairs": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-ipairs",
 				"description": "Returns three values (an iterator function, the table t, and 0) so that the construction",
 				"type": "function",
 				"args": [
-					{
-						"name": "t"
-					}
+					{ "type" : "table", "name": "t" }
 				],
-				"argsDisplay": "t"
+				"returnTypes" : ["function","table","int"]
 			},
 			"load": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-load",
 				"description": "Loads a chunk.",
 				"type": "function",
-				"args": [
+				"variants":[
 					{
-						"name": "chunk"
+						"args": [
+							{ "type" : "string", "name" : "chunk" },
+							{ "type" : "string", "name" : "chunkname", "optional" : true},
+							{ "type" : "string", "name" : "mode", "optional" : true},
+							{ "name" : "env", "optional" : true}
+						]
+					},
+					{
+						"args": [
+							{ "type" : "function", "name" : "chunk" },
+							{ "type" : "string", "name" : "chunkname", "optional" : true}
+						]
 					}
 				],
-				"argsDisplay": "chunk [, chunkname [, mode [, env]]]"
+				"returnTypes" : ["function", "err"]
 			},
 			"loadfile": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-loadfile",
 				"description": "Similar to load, but gets the chunk from file filename or from the standard input, if no file name is given.",
 				"type": "function",
-				"args": [],
-				"argsDisplay": "[filename [, mode [, env]]]"
+				"args": [
+					{"name" : "filename", "optional" : true},
+					{"name" : "mode", "optional" : true},
+					{"name" : "env", "optional" : true}
+				],
+				"returnTypes" : ["function","err"]
 			},
 			"next": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-next",
 				"description": "Allows a program to traverse all fields of a table. Its first argument is a table and its second argument is an index in this table. next returns the next index of the table and its associated value. When called with nil as its second argument, next returns an initial index and its associated value. When called with the last index, or with nil in an empty table, next returns nil. If the second argument is absent, then it is interpreted as nil. In particular, you can use next(t) to check whether a table is empty.",
 				"type": "function",
 				"args": [
-					{
-						"name": "table"
-					}
-				],
-				"argsDisplay": "table [, index]"
+					{ "name": "table" },
+					{ "name": "index", "optional" : true }
+				]
 			},
 			"pairs": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-pairs",
 				"description": "If t has a metamethod __pairs, calls it with t as argument and returns the first three results from the call.",
 				"type": "function",
 				"args": [
-					{
-						"name": "t"
-					}
-				],
-				"argsDisplay": "t"
+					{ "type" : "table", "name": "t" }
+				]
 			},
 			"pcall": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-pcall",
 				"description": "Calls function f with the given arguments in protected mode. This means that any error inside f is not propagated; instead, pcall catches the error and returns a status code. Its first result is the status code (a boolean), which is true if the call succeeds without errors. In such case, pcall also returns all results from the call, after this first result. In case of any error, pcall returns false plus the error message.",
 				"type": "function",
 				"args": [
-					{
-						"name": "f"
-					}
-				],
-				"argsDisplay": "f [, arg1, ···]"
+					{ "type" : "function", "name" : "f" },
+					{ "type" : "LuaValue", "name" : "...", "optional" : true}
+				]
 			},
 			"print": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-print",
 				"description": "Receives any number of arguments and prints their values to stdout, using the tostring function to convert each argument to a string. print is not intended for formatted output, but only as a quick way to show a value, for instance for debugging. For complete control over the output, use string.format and io.write.",
 				"type": "function",
-				"args": [],
-				"argsDisplay": "···"
+				"args": [
+					{ "type" : "LuaValue", "name" : "..." }
+				]
 			},
 			"rawequal": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-rawequal",
 				"description": "Checks whether v1 is equal to v2, without invoking the __eq metamethod. Returns a boolean.",
 				"type": "function",
 				"args": [
-					{
-						"name": "v1"
-					},
-					{
-						"name": "v2"
-					}
+					{ "type" : "LuaValue", "name": "v1" },
+					{ "type" : "LuaValue", "name": "v2" }
 				],
-				"argsDisplay": "v1, v2"
+				"returnTypes" : [ "bool" ]
 			},
 			"rawget": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-rawget",
 				"description": "Gets the real value of table[index], without invoking the __index metamethod. table must be a table; index may be any value.",
 				"type": "function",
 				"args": [
-					{
-						"name": "table"
-					},
-					{
-						"name": "index"
-					}
+					{ "type" : "table", "name" : "table" },
+					{ "type" : "LuaValue", "name": "index" }
 				],
-				"argsDisplay": "table, index"
+				"returnTypes" : [ "LuaValue" ]
 			},
 			"rawlen": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-rawlen",
 				"description": "Returns the length of the object v, which must be a table or a string, without invoking the __len metamethod. Returns an integer.",
 				"type": "function",
-				"args": [
+				"variants" : [
 					{
-						"name": "v"
+						"args": [
+							{ "type" : "string", "name": "v" }
+						]
+					},
+					{
+						"args": [
+							{ "type" : "table", "name": "v" }
+						]
 					}
 				],
-				"argsDisplay": "v"
+				"returnTypes" : [ "size_t" ]
 			},
 			"rawset": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-rawset",
 				"description": "Sets the real value of table[index] to value, without invoking the __newindex metamethod. table must be a table, index any value different from nil and NaN, and value any Lua value.",
 				"type": "function",
 				"args": [
-					{
-						"name": "table"
-					},
-					{
-						"name": "index"
-					},
-					{
-						"name": "value"
-					}
+					{ "type" : "table", "name" : "table" },
+					{ "type" : "LuaValue", "name" : "index" },
+					{ "type" : "LuaValue", "name" : "value" }
 				],
-				"argsDisplay": "table, index, value"
+				"returnTypes": [ "table" ]
 			},
 			"require": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-require",
 				"description": "Loads the given module. The function starts by looking into the package.loaded table to determine whether modname is already loaded. If it is, then require returns the value stored at package.loaded[modname]. Otherwise, it tries to find a loader for the module.",
 				"type": "function",
 				"args": [
-					{
-						"name": "modname"
-					}
+					{ "type" : "string", "name": "modname" }
 				],
-				"argsDisplay": "modname"
+				"returnTypes" : ["LuaValue"]
 			},
 			"select": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-select",
 				"description": "If index is a number, returns all arguments after argument number index; a negative number indexes from the end (-1 is the last argument). Otherwise, index must be the string \"#\", and select returns the total number of extra arguments it received.",
 				"type": "function",
-				"args": [
+				"variants" : [
 					{
-						"name": "index"
+						"type" : "function",
+						"args": [
+							{ "type" : "int", "name" : "index" },
+							{ "type" : "LuaValue", "name" : "..." }
+						],
+						"returnTypes" : ["table"]
+					},
+					{
+						"type" : "function",
+						"args": [
+							{ "type" : "string", "name" : "index" },
+							{ "type" : "LuaValue", "name" : "args ..." }
+						],
+						"returnTypes" : ["size_t"]
 					}
-				],
-				"argsDisplay": "index, ···"
+				]
 			},
 			"setmetatable": {
 				"link": "https://www.lua.org/manual/5.3/manual.html#pdf-setmetatable",
