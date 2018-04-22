@@ -1974,7 +1974,7 @@
 				"description" : "The command processor has a single binding for performing admin checks, available on the *CommandProcessor* table.",
 				"type" : "table",
 				"fields" : {
-					"getParameter": {
+					"adminCheck": {
 						"type": "function",
 						"description": "Checks whether the specified connection id is authorized to perform admin actions and returns `nil` if authorization is succesful. If unauthorized, returns a `String` error message to display to the client requesting the action, which may include the specified action description, such as \"Insufficient privileges to do the time warp again.\"",
 						"args": [
@@ -5966,7 +5966,9 @@
 					"equippedItem" : {
 						"type" : "function",
 						"description" : "Returns the contents of the specified equipment slot, or `nil` if the slot is empty. Equipment slot names are \"head\", \"chest\", \"legs\", \"back\", \"headCosmetic\", \"chestCosmetic\", \"legsCosmetic\" and \"backCosmetic\".",
-						"args" : [],
+						"args" : [
+							{ "type" : "string", "name" : "slotName"}
+						],
 						"returnTypes" : ["ItemDescriptor"]
 					},
 					"setEquippedItem" : {
@@ -7904,10 +7906,21 @@
 						"returnTypes" : ["void"]
 					}
 				}
+			},
+			"self" : {
+				"description" : "Refers to the currently executing script's or object's context.",
+				"type" : "table"
 			}
 		}
 	},
 	"namedTypes": {
+		"StringIterator" : {
+			"type" : "function",
+			"description" : "iterates through a bunch of strings. returns null once it's finished\n```\nlocal next = iterator()\nwhile next do\n    sb.logInfo(next)\n    next = iterator.next()\nend```",
+			"args" : [],
+			"returnTypes" : ["string"]
+		},
+
 		"PlatformerAStar::Path" : {
 			"type" : "table",
 			"description" : "A path made out of a list of nodes."
@@ -7927,11 +7940,11 @@
 		},
 		"JsonArray" : {
 			"description" : "A lua table that isn't indexed by keys.",
-			"type" : "table"
+			"type": sssdw
 		},
 
 		"void" : {
-			"description" : "Current value of nil.",
+			"description" : "Cusrrent value of nil.",
 			"type" : "table"
 		},
 		"float": {
@@ -7973,7 +7986,7 @@
 
 		"QuestId": {
 			"description" : "A number that uniquely identifies a quest given to a player.",
-			"type" : "number"
+			"type" : "string"
 		},
 		"DungeonId": {
 			"description" : "A number that identifies an dungeon in a world, dungon is a generated scructure, meaning the just like sewer dungons a village is also a dungeon.",
@@ -8005,6 +8018,10 @@
 			"type" : "table"
 		},
 		"List<int>": {
+			"description" : "A list containing 0 or more integral numbers.",
+			"type" : "table"
+		},
+		"List<unsigned>": {
 			"description" : "A list containing 0 or more integral numbers.",
 			"type" : "table"
 		},
@@ -8073,31 +8090,35 @@
 			"type" : "table",
 			"fields" : {
 				"init" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "initializes the behavior, loads required scripts, and returns a new behavior state",
 					"args": [
+						{ "type" : "BehaviorState", "name" : "source" },
 						{ "type" : "table", "name" : "_ENV" }
 					],
-					"returnTypes" : ["void"]
+					"canSelfCall" : true,
+					"returnTypes" : ["BehaviorState"]
 				},
 				"run" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "runs the behavior, takes a behavior state for the first argument",
 					"args": [
-						{ "type" : "table", "name" : "state" },
+						{ "type" : "BehaviorState", "name" : "source" },
+						{ "type" : "BehaviorState", "name" : "target" },
 						{ "type" : "float", "name" : "dt" }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"clear" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "resets the internal state of the behavior",
 					"args": [
-						{ "type" : "table", "name" : "state" }
+						{ "type" : "BehaviorState", "name" : "source" },
+						{ "type" : "BehaviorState", "name" : "target" },
+						{ "type" : "BehaviorState", "name" : "state" }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				}
 			}
@@ -8109,31 +8130,42 @@
 				"size" : {
 					"type": "function",
 					"description": "Returns the size of the canvas.",
-					"args": [],
+					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["Vec2I"]
 				},
 				"clear" : {
 					"type": "function",
 					"description": "Returns the size of the canvas.",
-					"args": [],
+					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"mousePosition" : {
 					"type": "function",
 					"description": "Returns the mouse position relative to the canvas.",
-					"args": [],
+					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["Vec2I"]
 				},
 				"drawImage" : {
 					"type": "function",
 					"description": "Draws an image to the canvas.",
 					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" },
 						{ "type" : "string", "name" : "image" },
 						{ "type" : "Vec2F", "name" : "position" },
 						{ "type" : "float", "name" : "scale", "optional" : true },
 						{ "type" : "Color", "name" : "color", "optional" : true },
 						{ "type" : "bool", "name" : "centered", "optional" : true }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawImageDrawable" : {
@@ -8142,6 +8174,7 @@
 					"variants" : [
 						{
 							"args" : [
+								{ "type" : "CanvasWidget", "name" : "source" },
 								{ "type" : "string", "name" : "image" },
 								{ "type" : "Vec2F", "name" : "position" },
 								{ "type" : "Vec2F", "name" : "scale", "optional" : true },
@@ -8151,6 +8184,7 @@
 						},
 						{
 							"args" : [
+								{ "type" : "CanvasWidget", "name" : "source" },
 								{ "type" : "string", "name" : "image" },
 								{ "type" : "Vec2F", "name" : "position" },
 								{ "type" : "float", "name" : "scale", "optional" : true },
@@ -8159,79 +8193,94 @@
 							]
 						}
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawImageRect" : {
 					"type": "function",
 					"description": "Draws a rect section of a texture to a rect section of the canvas.",
 					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" },
 						{ "type" : "string", "name" : "texName" },
 						{ "type" : "RectF", "name" : "texCoords" },
 						{ "type" : "RectF", "name" : "screenCoords" },
 						{ "type" : "Color", "name" : "color", "optional" : true }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawTiledImage" : {
 					"type": "function",
 					"description": "Draws an image tiled (and wrapping) within the specified screen area.",
 					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" },
 						{ "type" : "string", "name" : "texName" },
 						{ "type" : "Vec2F", "name" : "offset" },
 						{ "type" : "RectF", "name" : "screenCoords" },
 						{ "type" : "float", "name" : "scale", "optional" : true },
 						{ "type" : "Color", "name" : "color", "optional" : true }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawLine" : {
 					"type": "function",
 					"description": "Draws a line on the canvas.",
 					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" },
 						{ "type" : "Vec2F", "name" : "start" },
 						{ "type" : "Vec2F", "name" : "end" },
 						{ "type" : "Color", "name" : "color", "optional" : true },
 						{ "type" : "float", "name" : "lineWidth", "optional" : true }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawRect" : {
 					"type": "function",
 					"description": "Draws a line on the canvas.",
 					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" },
 						{ "type" : "RectF", "name" : "start" },
 						{ "type" : "Color", "name" : "color" }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawPoly" : {
 					"type": "function",
 					"description": "Draws a polygon on the canvas.",
 					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" },
 						{ "type" : "PolyF", "name" : "poly" },
 						{ "type" : "Color", "name" : "color" },
 						{ "type" : "float", "name" : "lineWidth", "optional" : true }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawTriangles" : {
 					"type": "function",
 					"description": "Draws a list of filled triangles to the canvas.",
 					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" },
 						{ "type" : "List<PolyF>", "name" : "triangles" },
 						{ "type" : "Color", "name" : "color", "optional" : true }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawText" : {
 					"type": "function",
 					"description": "Draws text on the canvas. textPositioning is in the format:\n\n```lua\n{\n    position = {0, 0}\n    horizontalAnchor = \"left\", -- left, mid, right\n    verticalAnchor = \"top\", -- top, mid, bottom\n    wrapWidth = nil -- wrap width in pixels or nil\n}\n```",
 					"args": [
+						{ "type" : "CanvasWidget", "name" : "source" },
 						{ "type" : "string", "name" : "text" },
 						{ "type" : "Json", "name" : "textPositioning" },
 						{ "type" : "unsigned", "name" : "fontSize" },
 						{ "type" : "Color", "name" : "color", "optional" : true }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				}
 			}
@@ -8245,31 +8294,39 @@
 			"type" : "table",
 			"fields" : {
 				"error" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns the error string, or nil if no error occured. (Internal radio messages (eg. sendRadioMessage) always return an error, even if they executed properly).",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"result" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns the return data returned by the function.",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["Json"]
 				},
 				"succeeded" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns a boolean indicating whether the promise has succeeded.",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				},
 				"finished" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns a boolean indicating whether the promise has finished.",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				}
 			}
@@ -8279,31 +8336,38 @@
 			"type" : "table",
 			"fields" : {
 				"error" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns the error string, or nil if no error occured. (Internal radio messages (eg. sendRadioMessage) always return an error, even if they executed properly).",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"result" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns the return `Json` data returned by the function.",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["Json"]
 				},
 				"succeeded" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns a boolean indicating whether the promise has succeeded.",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
 					"returnTypes" : ["bool"]
 				},
 				"finished" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns a boolean indicating whether the promise has finished.",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				}
 			}
@@ -8313,31 +8377,39 @@
 			"type" : "table",
 			"fields" : {
 				"error" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns the error string, or nil if no error occured. (Internal radio messages (eg. sendRadioMessage) always return an error, even if they executed properly).",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"result" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns the return `Vec2F` data returned by the function.",
-					"args": [],
-					"returnTypes" : ["Json"]
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
+					"returnTypes" : ["Vec2F"]
 				},
 				"succeeded" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns a boolean indicating whether the promise has succeeded.",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				},
 				"finished" : {
-					"onlySelfCall" : true,
 					"type": "function",
 					"description": "returns a boolean indicating whether the promise has finished.",
-					"args": [],
+					"args": [
+						{ "type" : "RpcPromise", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				}
 			}
@@ -8402,40 +8474,56 @@
 					"type": "function",
 					"description": "Reinitializes the random source, optionally using the specified seed.",
 					"args": [
+						{ "type" : "RandomSource", "name" : "source" },
 						{ "type" : "double", "name" : "seed" }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"addEntropy" : {
 					"type" : "function",
 					"description" : "Adds entropy to the random source, optionally using the specified seed.",
 					"args" : [
+						{ "type" : "RandomSource", "name" : "source" },
 						{ "type" : "unsigned", "name" : "seed" }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"randu32" : {
 					"type" : "function",
 					"description" : "Returns a random 32-bit unsigned integer value.",
-					"args" : [],
+					"args" : [
+						{ "type" : "RandomSource", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["unsigned"]
 				},
 				"randu64" : {
 					"type" : "function",
 					"description" : "Returns a random 64-bit unsigned integer value.",
-					"args" : [],
+					"args" : [
+						{ "type" : "RandomSource", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["unsigned"]
 				},
 				"randi32" : {
 					"type" : "function",
 					"description" : "Returns a random 32-bit signed integer value.",
-					"args" : [],
+					"args" : [
+						{ "type" : "RandomSource", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["int"]
 				},
 				"randi64" : {
 					"type" : "function",
 					"description" : "Returns a random 64-bit signed integer value.",
-					"args" : [],
+					"args" : [
+						{ "type" : "RandomSource", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["long"]
 				},
 				"randf" : {
@@ -8444,6 +8532,7 @@
 						{
 							"description" : "Returns a random `float` value within the specified range, or between 0 and 1 if no range is specified.",
 							"args" : [
+								{ "type" : "RandomSource", "name" : "source" },
 								{ "type" : "float", "name" : "min", "optional" : true },
 								{ "type" : "float", "name" : "max", "optional" : true }
 							],
@@ -8452,6 +8541,7 @@
 						{
 							"description" : "Returns a random `double` value within the specified range, or between 0 and 1 if no range is specified.",
 							"args" : [
+								{ "type" : "RandomSource", "name" : "source" },
 								{ "type" : "double", "name" : "min", "optional" : true },
 								{ "type" : "double", "name" : "max", "optional" : true }
 							],
@@ -8460,6 +8550,7 @@
 						{
 							"description" : "Returns a random unsigned integer value between minOrMax and max, or between 0 and minOrMax if no max is specified.",
 							"args" : [
+								{ "type" : "RandomSource", "name" : "source" },
 								{ "type" : "unsigned", "name" : "minOrMax", "optional" : true },
 								{ "type" : "unsigned", "name" : "max", "optional" : true }
 							],
@@ -8468,17 +8559,22 @@
 						{
 							"description" : "Returns a random signed integer value between minOrMax and max, or between 0 and minOrMax if no max is specified.",
 							"args" : [
+								{ "type" : "RandomSource", "name" : "source" },
 								{ "type" : "double", "name" : "min", "optional" : true },
 								{ "type" : "double", "name" : "max", "optional" : true }
 							],
 							"returnTypes" : ["int"]
 						}
-					]
+					],
+					"canSelfCall" : true
 				},
 				"randb" : {
 					"type" : "function",
 					"description" : "Returns a random `bool` value.",
-					"args" : [],
+					"args" : [
+						{ "type" : "RandomSource", "name" : "source" }
+					],
+					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				}
 			}
@@ -8491,10 +8587,12 @@
 					"type": "function",
 					"description": "Returns a `float` value from the Perlin source using 1, 2, or 3 dimensions of input.",
 					"args": [
+						{ "type" : "PerlinSource", "name" : "source" },
 						{ "type" : "float", "name" : "x" },
 						{ "type" : "float", "name" : "y", "optional" : true },
 						{ "type" : "float", "name" : "z", "optional" : true }
 					],
+					"canSelfCall" : true,
 					"returnTypes" : ["float"]
 				}
 			}
@@ -9279,90 +9377,77 @@
 					"description": "Returns the internal numeric codes of the characters s[i], s[i+1], ..., s[j]. The default value for i is 1; the default value for j is i. These indices are corrected following the same rules of function string.sub.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						}
+						{ "type" : "string", "name": "source" },
+						{ "type" : "unsigned", "name" : "i", "optional" : true},
+						{ "type" : "unsigned", "name" : "j", "optional" : true}
 					],
-					"argsDisplay": "s [, i [, j]]"
+					"canSelfCall" : true,
+					"returnTypes" : ["List<unsigned>"]
 				},
 				"find": {
 					"link": "https://www.lua.org/manual/5.3/manual.html#pdf-string.find",
 					"description": "Looks for the first match of pattern (see §6.4.1) in the string s. If it finds a match, then find returns the indices of s where this occurrence starts and ends; otherwise, it returns nil. A third, optional numeric argument init specifies where to start the search; its default value is 1 and can be negative. A value of true as a fourth, optional argument plain turns off the pattern matching facilities, so the function does a plain \"find substring\" operation, with no characters in pattern being considered magic. Note that if plain is given, then init must be given as well.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						},
-						{
-							"name": "pattern"
-						}
+						{ "type" : "string", "name": "source" },
+						{ "type" : "string", "name": "pattern" },
+						{ "type" : "unsigned", "name": "init" },
+						{ "type" : "bool", "name": "plain" }
 					],
-					"argsDisplay": "s, pattern [, init [, plain]]"
+					"canSelfCall" : true,
+					"returnTypes" : ["unsigned"]
 				},
 				"gmatch": {
 					"link": "https://www.lua.org/manual/5.3/manual.html#pdf-string.gmatch",
 					"description": "Returns an iterator function that, each time it is called, returns the next captures from pattern (see §6.4.1) over the string s. If pattern specifies no captures, then the whole match is produced in each call.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						},
-						{
-							"name": "pattern"
-						}
+						{ "type" : "string", "name": "source" },
+						{ "type" : "string", "name": "pattern" }
 					],
-					"argsDisplay": "s, pattern"
+					"canSelfCall" : true,
+					"returnTypes" : ["StringIterator"]
 				},
 				"gsub": {
 					"link": "https://www.lua.org/manual/5.3/manual.html#pdf-string.gsub",
 					"description": "Returns a copy of s in which all (or the first n, if given) occurrences of the pattern (see §6.4.1) have been replaced by a replacement string specified by repl, which can be a string, a table, or a function. gsub also returns, as its second value, the total number of matches that occurred. The name gsub comes from Global SUBstitution.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						},
-						{
-							"name": "pattern"
-						},
-						{
-							"name": "repl"
-						}
+						{ "type" : "string", "name": "source" },
+						{ "type" : "string", "name": "pattern" },
+						{ "type" : "string", "name": "replacement" },
+						{ "type" : "int", "name": "count" }
 					],
-					"argsDisplay": "s, pattern, repl [, n]"
+					"canSelfCall" : true,
+					"returnTypes" : ["string"]
 				},
 				"len": {
 					"link": "https://www.lua.org/manual/5.3/manual.html#pdf-string.len",
 					"description": "Receives a string and returns its length. The empty string \"\" has length 0. Embedded zeros are counted, so \"a\\000bc\\000\" has length 5.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						}
+						{ "type" : "string", "name": "source" }
 					],
-					"argsDisplay": "s"
+					"canSelfCall" : true,
+					"returnTypes": ["unsigned"]
 				},
 				"lower": {
 					"link": "https://www.lua.org/manual/5.3/manual.html#pdf-string.lower",
 					"description": "Receives a string and returns a copy of this string with all uppercase letters changed to lowercase. All other characters are left unchanged. The definition of what an uppercase letter is depends on the current locale.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						}
+						{ "type" : "string", "name": "source" }
 					],
-					"argsDisplay": "s"
+					"canSelfCall" : true,
+					"returnTypes": ["string"]
 				},
 				"match": {
 					"link": "https://www.lua.org/manual/5.3/manual.html#pdf-string.match",
 					"description": "Looks for the first match of pattern (see §6.4.1) in the string s. If it finds one, then match returns the captures from the pattern; otherwise it returns nil. If pattern specifies no captures, then the whole match is returned. A third, optional numeric argument init specifies where to start the search; its default value is 1 and can be negative.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						},
-						{
-							"name": "pattern"
-						}
+						{ "type" : "string", "name": "source" },
+						{ "type" : "string", "name": "pattern" }
 					],
 					"canSelfCall" : true,
 					"argsDisplay": "s, pattern [, init]",
@@ -9371,33 +9456,23 @@
 				},
 				"rep": {
 					"link": "https://www.lua.org/manual/5.3/manual.html#pdf-string.rep",
-					"description": "Returns a string that is the concatenation of n copies of the string s separated by the string sep. The default value for sep is the empty string (that is, no separator). Returns the empty string if n is not positive.",
+					"description": "repeats the string a specific number of times. string will be empty if count is negative.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						},
-						{
-							"name": "n"
-						}
+						{ "type" : "string", "name": "source" },
+						{ "type" : "unsigned", "name": "count" }
 					],
 					"canSelfCall" : true,
-					"argsDisplay": "s, n [, sep]",
-					"argsDisplayOmitSelf" : "n [, sep]",
 					"returnTypes" : ["string"]
 				},
 				"reverse": {
 					"link": "https://www.lua.org/manual/5.3/manual.html#pdf-string.reverse",
-					"description": "Returns a string that is the string s reversed.",
+					"description": "Reverse the characters in the string.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						}
+						{ "type" : "string", "name": "source" }
 					],
 					"canSelfCall" : true,
-					"argsDisplay" : "s",
-					"argsDisplayOmitSelf" : "",
 					"returnTypes" : ["string"]
 				},
 				"sub": {
@@ -9405,16 +9480,11 @@
 					"description": "Returns the substring of s that starts at i and continues until j; i and j can be negative. If j is absent, then it is assumed to be equal to -1 (which is the same as the string length). In particular, the call string.sub(s,1,j) returns a prefix of s with length j, and string.sub(s, -i) returns a suffix of s with length i.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						},
-						{
-							"name": "i"
-						}
+						{ "type" : "string", "name": "source" },
+						{ "type" : "int", "name": "start" },
+						{ "type" : "int", "name": "end", "optional" : true }
 					],
 					"canSelfCall" : true,
-					"argsDisplay": "s, i [, j]",
-					"argsDisplayOmitSelf" : "i [, j]",
 					"returnTypes" : ["string"]
 				},
 				"upper": {
@@ -9422,13 +9492,9 @@
 					"description": "Receives a string and returns a copy of this string with all lowercase letters changed to uppercase. All other characters are left unchanged. The definition of what a lowercase letter is depends on the current locale.",
 					"type": "function",
 					"args": [
-						{
-							"name": "s"
-						}
+						{ "type" : "string", "name": "source" }
 					],
 					"canSelfCall" : true,
-					"argsDisplay": "s",
-					"argsDisplayOmitSelf" : "",
 					"returnTypes" : ["string"]
 				}
 			}
