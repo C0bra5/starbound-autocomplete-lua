@@ -7940,7 +7940,7 @@
 		},
 		"JsonArray" : {
 			"description" : "A lua table that isn't indexed by keys.",
-			"type": sssdw
+			"type": "table"
 		},
 
 		"void" : {
