@@ -2296,6 +2296,24 @@
 							{ "type" : "string" , "name" : "propertyName" }
 						],
 						"returnTypes" : ["Json"]
+					},
+					"transformPoint": {
+						"type": "function",
+						"description": "Applies the specified part's transformation on the given point.",
+						"args": [
+							{ "type" : "string" , "name" : "partName" },
+							{ "type" : "Vec2F" , "name" : "point" }
+						],
+						"returnTypes" : ["Json"]
+					},
+					"transformPoly": {
+						"type": "function",
+						"description": "Applies the specified part's transformation on the given poly.",
+						"args": [
+							{ "type" : "string" , "name" : "partName" },
+							{ "type" : "PolyF" , "name" : "poly" }
+						],
+						"returnTypes" : ["Json"]
 					}
 				}
 			},
@@ -2374,6 +2392,23 @@
 						"description" : "Sets the window icon.",
 						"args" : [
 							{ "type" : "string", "name" : "image" }
+						],
+						"returnTypes" : ["void"]
+					},
+					"addWidget" : {
+						"type" : "function",
+						"description" : "Creates a new widget with the specified config and adds it to the pane, optionally with the specified name.",
+						"args" : [
+							{ "type" : "json", "name" : "widgetConfig" },
+							{ "type" : "string", "name" : "widgetName", "optional" : true }
+						],
+						"returnTypes" : ["void"]
+					},
+					"removeWidget" : {
+						"type" : "function",
+						"description" : "Removes the specified widget from the pane.",
+						"args" : [
+							{ "type" : "string", "name" : "widgetName" }
 						],
 						"returnTypes" : ["void"]
 					}
@@ -3260,16 +3295,64 @@
 							}
 						]
 					},
+					"objectWarpActionWorld" : {
+						"type" : "function",
+						"description" : "Returns the warp action world ID for the specified object.",
+						"args" : [
+							{ "type" : "Uuid", "name" : "uuid" }
+						],
+						"returnTypes" : ["WorldId"]
+					},
+					"objectOrbit" : {
+						"type" : "function",
+						"description" : "Returns the orbit of the specified object, if any.",
+						"args" : [
+							{ "type" : "Uuid", "name" : "uuid" }
+						],
+						"returnTypes" : ["Json"]
+					},
+					"objectPosition" : {
+						"type" : "function",
+						"description" : "Returns the orbit of the specified object, if any.",
+						"args" : [
+							{ "type" : "Uuid", "name" : "uuid" }
+						],
+						"returnTypes" : ["Vec2F"]
+					},
+					"objectTypeConfig" : {
+						"type" : "function",
+						"description" : "Returns the configuration of the specified object type.",
+						"args" : [
+							{ "type" : "String", "name" : "typeName" }
+						],
+						"returnTypes" : ["Vec2F"]
+					},
 					"systemSpawnObject" : {
 						"type" : "function",
 						"description" : "description",
 						"args" : [
 							{ "type" : "string", "name" : "typeName" },
-							{ "type" : "Vec2F", "name" : "position" },
+							{ "type" : "Vec2F", "name" : "position", "optional" : true },
 							{ "type" : "Uuid", "name" : "uuid", "optional" : true },
 							{ "type" : "Json", "name" : "parameters", "optional" : true }
 						],
 						"returnTypes" : ["Uuid"]
+					},
+					"hasChildren" : {
+						"type" : "function",
+						"description" : "Returns definitively whether the coordinate has orbiting children. nil return means the coordinate is not loaded.",
+						"args" : [
+							{ "type" : "CelestialCoordinate", "name" : "coordinate" }
+						],
+						"returnTypes" : ["bool"]
+					},
+					"childOrbits" : {
+						"type" : "function",
+						"description" : "Returns the child orbits for the specified celestial coordinate.",
+						"args" : [
+							{ "type" : "CelestialCoordinate", "name" : "coordinate" }
+						],
+						"returnTypes" : ["List<int>"]
 					},
 					"playerShips" : {
 						"type" : "function",
@@ -3287,9 +3370,10 @@
 					},
 					"scanSystems" : {
 						"type" : "function",
-						"description" : "Returns a list of systems in the given region. This scans for systems asynchronously, meaning it may not return all systems if they have not been generated or sent to the client. Use `scanRegionFullyLoaded` to see if this is the case.",
+						"description" : "Returns a list of systems in the given region. If includedTypes is specified, this will return only systems whose typeName parameter is included in the set. This scans for systems asynchronously, meaning it may not return all systems if they have not been generated or sent to the client. Use scanRegionFullyLoaded to see if this is the case.",
 						"args" : [
-							{ "type" : "RectI", "name" : "region" }
+							{ "type" : "RectI", "name" : "region" },
+							{ "type" : "Set<String>", "name" : "includedTypes", "optional" : true }
 						],
 						"returnTypes" : ["List<CelestialCoordinate>"]
 					},
@@ -3655,6 +3739,14 @@
 							{ "type" : "DamageRequest", "name" : "damageRequest" }
 						],
 						"returnTypes" : ["void"]
+					},
+					"uniqueStatusEffectActive" : {
+						"type" : "function",
+						"description" : "Returns `true` if the specified unique status effect is currently active and false otherwise.",
+						"args" : [
+							{ "type" : "String", "name" : "effectName" }
+						],
+						"returnTypes" : ["bool"]
 					}
 				}
 			},
@@ -4244,13 +4336,19 @@
 					},
 					"lineCollision" : {
 						"type" : "function",
-						"description" : "If the line between the specified points overlaps any generated collision geometry of the specified collision kinds, returns the point at which the line collides, or `nil` if the line does not collide.",
+						"description" : "If the line between the specified points overlaps any generated collision geometry of the specified collision kinds, returns the point at which the line collides, or nil if the line does not collide. If intersecting a side of the poly, also returns the normal of the intersected side as a second return.",
 						"args" : [
 							{ "type" : "Vec2F", "name" : "startPoint" },
 							{ "type" : "Vec2F", "name" : "endPoint" },
 							{ "type" : "CollisionSet", "name" : "collisionKinds", "optional" : true }
 						],
-						"returnTypes" : ["Vec2F"]
+						"returnTypes" : ["Vec2F", "Vec2F"]
+					},
+					"surfaceLevel" : {
+						"type" : "function",
+						"description" : "Returns the surface layer base height.",
+						"args" : [],
+						"returnTypes" : ["float"]
 					},
 					"lineTileCollision" : {
 						"type" : "function",
@@ -4675,7 +4773,8 @@
 							{ "type" : "Vec2F", "name" : "sourcePosition" },
 							{ "type" : "string", "name" : "damageType" },
 							{ "type" : "float", "name" : "damageAmount" },
-							{ "type" : "unsigned", "name" : "harvestLevel", "optional" : true }
+							{ "type" : "unsigned", "name" : "harvestLevel", "optional" : true },
+							{ "type" : "EntityId", "name" : "sourceEntity", "optional" : true }
 						],
 						"returnTypes" : ["bool"]
 					},
@@ -4689,7 +4788,8 @@
 							{ "type" : "Vec2F", "name" : "sourcePosition" },
 							{ "type" : "string", "name" : "damageType" },
 							{ "type" : "float", "name" : "damageAmount" },
-							{ "type" : "unsigned", "name" : "harvestLevel", "optional" : true }
+							{ "type" : "unsigned", "name" : "harvestLevel", "optional" : true },
+							{ "type" : "EntityId", "name" : "sourceEntity", "optional" : true }
 						],
 						"returnTypes" : ["bool"]
 					},
@@ -5666,6 +5766,61 @@
 							{ "type" : "Maybe<bool>", "name" : "breathable" }
 						],
 						"returnTypes" : ["void"]
+					},
+					"radialTileQuery" : {
+						"type" : "function",
+						"description" : "Returns a list of existing tiles within `radius` of the given position, on the specified tile layer.",
+						"args" : [
+							{ "type" : "Vec2F", "name" : "position" },
+							{ "type" : "float", "name" : "radius" },
+							{ "type" : "string", "name" : "layerName" }
+						],
+						"returnTypes" : ["List<Vec2I>"]
+					},
+					"entityMetaBoundBOx" : {
+						"type" : "function",
+						"description" : "Returns the meta bound box of the entity, if any.",
+						"args" : [
+							{ "type" : "EntityId", "name" : "entityId" }
+						],
+						"returnTypes" : ["Vec2F"]
+					},
+					"entityMetaBoundBOx" : {
+						"type" : "function",
+						"description" : "Returns the list of biome specific blocks that can place in the biome at the specified position.",
+						"args" : [
+							{ "type" : "Vec2I", "name" : "position" }
+						],
+						"returnTypes" : ["List<MaterialId>"]
+					},
+					"getNpcScriptParameter" : {
+						"type" : "function",
+						"description" : "Returns the value of the specified NPC's variant script config parameter, or defaultValue or nil if the parameter is not set or the entity is not an NPC.",
+						"args" : [
+							{ "type" : "Vec2I", "name" : "position" },
+							{ "type" : "String", "name" : "parameterName" },
+							{ "type" : "Json", "name" : "defaultValue" }
+						],
+						"returnTypes" : ["Json"]
+					},
+					"enqueuePlacement" : {
+						"type" : "function",
+						"description" : "Enqueues a biome distribution config for placement through world generation. The returned promise is fulfilled with the position of the placement, once it has been placed.",
+						"args" : [
+							{ "type" : "List<Json>", "name" : "distributionConfigs" },
+							{ "type" : "DungeonId", "name" : "id", "optional" : true }
+						],
+						"returnTypes" : ["Vec2I"]
+					},
+					"placeDungeon" : {
+						"type" : "function",
+						"description" : "Generates the specified dungeon in the world at the specified position. Does not ignore anchoring rules, will fail if the dungeon can't be placed. If a dungeon id is specified, it will be assigned to the dungeon.",
+						"args" : [
+							{ "type" : "String", "name" : "dungeonName" },
+							{ "type" : "Vec2I", "name" : "position" },
+							{ "type" : "DungeonId", "name" : "dungeonId", "optional" : true }
+						],
+						"returnTypes" : ["void"]
 					}
 				}
 			},
@@ -5980,10 +6135,18 @@
 						],
 						"returnTypes" : ["void"]
 					},
-					"setSwapSlotItem" : {
+					"swapSlotItem" : {
 						"type" : "function",
 						"description" : "Returns the contents of the player's swap (cursor) slot, or `nil` if the slot is empty.",
 						"args" : [],
+						"returnTypes" : ["ItemDescriptor"]
+					},
+					"setSwapSlotItem" : {
+						"type" : "function",
+						"description" : "Sets the item in the player's swap (cursor) slot to the specified item.",
+						"args" : [
+							{ "type" : "itemDescriptor", "name" : "item" }
+						],
 						"returnTypes" : ["ItemDescriptor"]
 					},
 					"canStartQuest" : {
@@ -6223,6 +6386,94 @@
 							{ "type" : "string", "name" : "collectionName" }
 						],
 						"returnTypes" : ["List<String>"]
+					},
+					"getProperty" : {
+						"type" : "function",
+						"description" : "Returns the value assigned to the specified generic player property. If there is no value set, returns default.",
+						"args" : [
+							{ "type" : "String", "name" : "name" },
+							{ "type" : "Json", "name" : "default" }
+						],
+						"returnTypes" : ["Json"]
+					},
+					"setProperty" : {
+						"type" : "function",
+						"description" : "Sets a generic player property to the specified value.",
+						"args" : [
+							{ "type" : "String", "name" : "name" },
+							{ "type" : "Json", "name" : "value" }
+						],
+						"returnTypes" : ["void"]
+					},
+					"addScannedObject" : {
+						"type" : "function",
+						"description" : "Adds the specified object to the player's scanned objects.",
+						"args" : [
+							{ "type" : "String", "name" : "name" }
+						],
+						"returnTypes" : ["void"]
+					},
+					"removeScannedObject" : {
+						"type" : "function",
+						"description" : "Removes the specified object from the player's scanned objects.",
+						"args" : [
+							{ "type" : "String", "name" : "name" }
+						],
+						"returnTypes" : ["void"]
+					},
+					"hasAcceptedQuest" : {
+						"type" : "function",
+						"description" : "Returns `true` if the player has accepted a quest (which may be active, completed, or failed) with the specified quest id and `false` otherwise.",
+						"args" : [
+							{ "type" : "String", "name" : "questId" }
+						],
+						"returnTypes" : ["bool"]
+					},
+					"hasActiveQuest" : {
+						"type" : "function",
+						"description" : "Returns `true` if the player has a currently active quest with the specified quest id and `false` otherwise.",
+						"args" : [
+							{ "type" : "String", "name" : "questId" }
+						],
+						"returnTypes" : ["bool"]
+					},
+					"currentQuestWorld" : {
+						"type" : "function",
+						"description" : "If the player's currently tracked quest has an associated world, returns the id of that world.",
+						"args" : [],
+						"returnTypes" : ["WorldId"]
+					},
+					"questWorlds" : {
+						"type" : "function",
+						"description" : "Returns a list of world ids for worlds relevant to the player's current quests, along with a boolean indicating whether that quest is tracked.",
+						"args" : [],
+						"returnTypes" : ["List<pair<WorldId, bool>>"]
+					},
+					"currentQuestLocation" : {
+						"type" : "function",
+						"description" : "If the player's currently tracked quest has an associated location (CelestialCoordinate, system orbit, UUID, or system position) returns that location.",
+						"args" : [],
+						"returnTypes" : ["Json"]
+					},
+					"questLocations" : {
+						"type" : "function",
+						"description" : "If the player's currently tracked quest has an associated location (CelestialCoordinate, system orbit, UUID, or system position) returns that location.",
+						"args" : [],
+						"returnTypes" : ["List<pair<Json, bool>>"]
+					},
+					"hasCompletedMission" : {
+						"type" : "function",
+						"description" : "Returns whether the player has completed the specified mission.",
+						"args" : [
+							{ "type" : "String", "name" : "missionName" }
+						],
+						"returnTypes" : ["void"]
+					},
+					"teleportBookmarks" : {
+						"type" : "function",
+						"description" : "Lists all of the player's teleport bookmarks.",
+						"args" : [],
+						"returnTypes" : ["List<Json>"]
 					}
 				}
 			},
@@ -6648,6 +6899,33 @@
 							{ "type" : "string", "name" : "widgetName" }
 						],
 						"returnTypes" : ["CanvasWidget"]
+					},
+					"addChild" : {
+						"type" : "function",
+						"description" : "Creates a new child widget with the specified config and adds it to the specified widget, optionally with the specified name.",
+						"args" : [
+							{ "type" : "String", "name" : "widgetName" },
+							{ "type" : "Json", "name" : "childConfig" },
+							{ "type" : "String", "name" : "childName", "optional" : true }
+						],
+						"returnTypes" : ["void"]
+					},
+					"removeAllChildren" : {
+						"type" : "function",
+						"description" : "Removes all child widgets of the specified widget.",
+						"args" : [
+							{ "type" : "String", "name" : "widgetName" }
+						],
+						"returnTypes" : ["void"]
+					},
+					"removeChild" : {
+						"type" : "function",
+						"description" : "Removes the specified child widget from the specified widget.",
+						"args" : [
+							{ "type" : "String", "name" : "widgetName" },
+							{ "type" : "String", "name" : "childName" }
+						],
+						"returnTypes" : ["void"]
 					}
 				}
 			},
@@ -6927,7 +7205,8 @@
 						"type" : "function",
 						"description" : "Returns a JSON object containing the `path` and base `config` for the specified material if it is a real material, or `nil` if it is a metamaterial or invalid.",
 						"args" : [
-							{ "type" : "string", "name" : "materialName" }
+							{ "type" : "string", "name" : "materialName" },
+							{ "type" : "uint64_t", "name" : "seed", "optional" : true }
 						],
 						"returnTypes" : ["Json"]
 					},
@@ -6993,7 +7272,8 @@
 						"type" : "function",
 						"description" : "Returns the configured base movement parameters for the specified monster type.",
 						"args" : [
-							{ "type" : "string", "name" : "monsterType" }
+							{ "type" : "string", "name" : "monsterType" },
+							{ "type" : "uint64_t", "name" : "seed", "optional" : true }
 						],
 						"returnTypes" : ["ActorMovementParameters"]
 					},
@@ -8096,7 +8376,6 @@
 						{ "type" : "BehaviorState", "name" : "source" },
 						{ "type" : "table", "name" : "_ENV" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["BehaviorState"]
 				},
 				"run" : {
@@ -8107,7 +8386,6 @@
 						{ "type" : "BehaviorState", "name" : "target" },
 						{ "type" : "float", "name" : "dt" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"clear" : {
@@ -8118,7 +8396,6 @@
 						{ "type" : "BehaviorState", "name" : "target" },
 						{ "type" : "BehaviorState", "name" : "state" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				}
 			}
@@ -8133,7 +8410,6 @@
 					"args": [
 						{ "type" : "CanvasWidget", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["Vec2I"]
 				},
 				"clear" : {
@@ -8142,7 +8418,6 @@
 					"args": [
 						{ "type" : "CanvasWidget", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"mousePosition" : {
@@ -8151,7 +8426,6 @@
 					"args": [
 						{ "type" : "CanvasWidget", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["Vec2I"]
 				},
 				"drawImage" : {
@@ -8165,7 +8439,6 @@
 						{ "type" : "Color", "name" : "color", "optional" : true },
 						{ "type" : "bool", "name" : "centered", "optional" : true }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawImageDrawable" : {
@@ -8193,7 +8466,6 @@
 							]
 						}
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawImageRect" : {
@@ -8206,7 +8478,6 @@
 						{ "type" : "RectF", "name" : "screenCoords" },
 						{ "type" : "Color", "name" : "color", "optional" : true }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawTiledImage" : {
@@ -8220,7 +8491,6 @@
 						{ "type" : "float", "name" : "scale", "optional" : true },
 						{ "type" : "Color", "name" : "color", "optional" : true }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawLine" : {
@@ -8233,7 +8503,6 @@
 						{ "type" : "Color", "name" : "color", "optional" : true },
 						{ "type" : "float", "name" : "lineWidth", "optional" : true }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawRect" : {
@@ -8244,7 +8513,6 @@
 						{ "type" : "RectF", "name" : "start" },
 						{ "type" : "Color", "name" : "color" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawPoly" : {
@@ -8256,7 +8524,6 @@
 						{ "type" : "Color", "name" : "color" },
 						{ "type" : "float", "name" : "lineWidth", "optional" : true }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawTriangles" : {
@@ -8267,7 +8534,6 @@
 						{ "type" : "List<PolyF>", "name" : "triangles" },
 						{ "type" : "Color", "name" : "color", "optional" : true }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"drawText" : {
@@ -8280,7 +8546,6 @@
 						{ "type" : "unsigned", "name" : "fontSize" },
 						{ "type" : "Color", "name" : "color", "optional" : true }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				}
 			}
@@ -8299,7 +8564,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"result" : {
@@ -8308,7 +8572,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["Json"]
 				},
 				"succeeded" : {
@@ -8317,7 +8580,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				},
 				"finished" : {
@@ -8326,7 +8588,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				}
 			}
@@ -8341,7 +8602,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"result" : {
@@ -8350,7 +8610,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["Json"]
 				},
 				"succeeded" : {
@@ -8367,7 +8626,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				}
 			}
@@ -8382,7 +8640,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"result" : {
@@ -8391,7 +8648,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["Vec2F"]
 				},
 				"succeeded" : {
@@ -8400,7 +8656,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				},
 				"finished" : {
@@ -8409,7 +8664,6 @@
 					"args": [
 						{ "type" : "RpcPromise", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				}
 			}
@@ -8432,7 +8686,7 @@
 			"description" : "A table containing the basic information of an object  \nIt contains:  \n* name, the itemId\n* count, the size of the stack\n* parameters, the parameters of the obejct",
 			"type" : "table",
 			"fields" : {
-				"item" : {
+				"name" : {
 					"type" : "ItemId",
 					"description" : "The itemId of item"
 				},
@@ -8477,7 +8731,6 @@
 						{ "type" : "RandomSource", "name" : "source" },
 						{ "type" : "double", "name" : "seed" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"addEntropy" : {
@@ -8487,7 +8740,6 @@
 						{ "type" : "RandomSource", "name" : "source" },
 						{ "type" : "unsigned", "name" : "seed" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["void"]
 				},
 				"randu32" : {
@@ -8496,7 +8748,6 @@
 					"args" : [
 						{ "type" : "RandomSource", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["unsigned"]
 				},
 				"randu64" : {
@@ -8505,7 +8756,6 @@
 					"args" : [
 						{ "type" : "RandomSource", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["unsigned"]
 				},
 				"randi32" : {
@@ -8514,7 +8764,6 @@
 					"args" : [
 						{ "type" : "RandomSource", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["int"]
 				},
 				"randi64" : {
@@ -8523,7 +8772,6 @@
 					"args" : [
 						{ "type" : "RandomSource", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["long"]
 				},
 				"randf" : {
@@ -8565,8 +8813,7 @@
 							],
 							"returnTypes" : ["int"]
 						}
-					],
-					"canSelfCall" : true
+					]
 				},
 				"randb" : {
 					"type" : "function",
@@ -8574,7 +8821,6 @@
 					"args" : [
 						{ "type" : "RandomSource", "name" : "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["bool"]
 				}
 			}
@@ -8592,7 +8838,6 @@
 						{ "type" : "float", "name" : "y", "optional" : true },
 						{ "type" : "float", "name" : "z", "optional" : true }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["float"]
 				}
 			}
@@ -9381,7 +9626,6 @@
 						{ "type" : "unsigned", "name" : "i", "optional" : true},
 						{ "type" : "unsigned", "name" : "j", "optional" : true}
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["List<unsigned>"]
 				},
 				"find": {
@@ -9394,7 +9638,6 @@
 						{ "type" : "unsigned", "name": "init" },
 						{ "type" : "bool", "name": "plain" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["unsigned"]
 				},
 				"gmatch": {
@@ -9405,7 +9648,6 @@
 						{ "type" : "string", "name": "source" },
 						{ "type" : "string", "name": "pattern" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["StringIterator"]
 				},
 				"gsub": {
@@ -9418,7 +9660,6 @@
 						{ "type" : "string", "name": "replacement" },
 						{ "type" : "int", "name": "count" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"len": {
@@ -9428,7 +9669,6 @@
 					"args": [
 						{ "type" : "string", "name": "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes": ["unsigned"]
 				},
 				"lower": {
@@ -9438,7 +9678,6 @@
 					"args": [
 						{ "type" : "string", "name": "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes": ["string"]
 				},
 				"match": {
@@ -9449,7 +9688,6 @@
 						{ "type" : "string", "name": "source" },
 						{ "type" : "string", "name": "pattern" }
 					],
-					"canSelfCall" : true,
 					"argsDisplay": "s, pattern [, init]",
 					"argsDisplayOmitSelf" : "n [, sep]",
 					"returnTypes" : ["string"]
@@ -9462,7 +9700,6 @@
 						{ "type" : "string", "name": "source" },
 						{ "type" : "unsigned", "name": "count" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"reverse": {
@@ -9472,7 +9709,6 @@
 					"args": [
 						{ "type" : "string", "name": "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"sub": {
@@ -9484,7 +9720,6 @@
 						{ "type" : "int", "name": "start" },
 						{ "type" : "int", "name": "end", "optional" : true }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				},
 				"upper": {
@@ -9494,7 +9729,6 @@
 					"args": [
 						{ "type" : "string", "name": "source" }
 					],
-					"canSelfCall" : true,
 					"returnTypes" : ["string"]
 				}
 			}
