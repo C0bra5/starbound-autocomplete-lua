@@ -3698,7 +3698,7 @@
 					},
 					"inflictedHitsSince" : {
 						"type" : "function",
-						"description" : "Returns two values:\n\n* A list {{entityId, damageRequest}} for the entity's inflicted hits since the specified heartbeat.\n* The most recent heartbeat to be passed into the function again to get the inflicted hits since this function call.",
+						"description" : "Returns two values:\n\n* A list {{entityId, damageRequest}} for the entity's inflicted hits since the specified heartbeat.\n* The most recent heartbeat to be passed into the function again to get the inflicted hits since this function call.\n\nExample:  \n```lua\n_,lastStep = status.inflictedHitsSince() -- Returns the full buffer of damage notifications, throw this away, we only want the current step\n\n-- stuff\n\nnotifications,lastStep = status.inflictedHitsSince(lastStep) -- Get the damage notifications since the last call, and update the heartbeat\n```",
 						"args" : [
 							{ "type" : "unsigned", "name" : "since" }
 						],
@@ -3706,7 +3706,7 @@
 					},
 					"inflictedDamageSince" : {
 						"type" : "function",
-						"description" : "Returns two values:\n\n* A list of damage notifications for damage inflicted by the entity.\n* The most recent heartbeat to be passed into the function again to get the list of damage notifications since the last call.",
+						"description" : "Returns two values:\n\n* A list of damage notifications for damage inflicted by the entity.\n* The most recent heartbeat to be passed into the function again to get the list of damage notifications since the last call.\n\nExample:  \n```lua\n_,lastStep = status.inflictedDamageSince() -- Returns the full buffer of damage notifications, throw this away, we only want the current step\n\n-- stuff\n\nnotifications,lastStep = status.inflictedDamageSince(lastStep) -- Get the damage notifications since the last call, and update the heartbeat\n```",
 						"args" : [
 							{ "type" : "unsigned", "name" : "since" }
 						],
@@ -4249,7 +4249,7 @@
 							{ "type" : "Vec2F", "name" : "position1" },
 							{ "type" : "Vec2F", "name" : "position2" }
 						],
-						"returnTypes" : ["void"]
+						"returnTypes" : ["Vec2F"]
 					},
 					"polyContains" : {
 						"type" : "function",
@@ -4558,7 +4558,7 @@
 						"type" : "function",
 						"description" : "Returns the duration of a day on the current world.",
 						"args" : [],
-						"returnTypes" : ["name"]
+						"returnTypes" : ["float"]
 					},
 					"getProperty" : {
 						"type" : "function",
@@ -5852,6 +5852,56 @@
 						"args" : [],
 						"returnTypes" : ["string"]
 					},
+					"isAdmin" : {
+						"type" : "function",
+						"description" : "Returns whether the player is admin.",
+						"args" : [],
+						"returnTypes" : ["bool"]
+					},
+					"getProperty" : {
+						"type" : "function",
+						"description" : "Returns the value assigned to the specified generic player property. If there is no value set, returns default.",
+						"args" : [
+							{ "type" : "String", "name" : "name" },
+							{ "type" : "Json", "name" : "default" }
+						],
+						"returnTypes" : ["Json"]
+					},
+					"setProperty" : {
+						"type" : "function",
+						"description" : "Sets a generic player property to the specified value.",
+						"args" : [
+							{ "type" : "String", "name" : "name" },
+							{ "type" : "Json", "name" : "value" }
+						],
+						"returnTypes" : ["void"]
+					},
+					"addScannedObject" : {
+						"type" : "function",
+						"description" : "Adds the specified object to the player's scanned objects.",
+						"args" : [
+							{ "type" : "String", "name" : "name" }
+						],
+						"returnTypes" : ["void"]
+					},
+					"removeScannedObject" : {
+						"type" : "function",
+						"description" : "Removes the specified object from the player's scanned objects.",
+						"args" : [
+							{ "type" : "String", "name" : "name" }
+						],
+						"returnTypes" : ["void"]
+					},
+					"interact": {
+						"type": "function",
+						"description": "Triggers an interact action on the player as if they had initiated an interaction and the result had returned the specified interaction type and configuration. Can be used to e.g. open GUI windows normally triggered by player interaction with entities.",
+						"args": [
+							{ "type" : "string" , "name": "interactionType" },
+							{ "type" : "Json" , "name": "config" },
+							{ "type" : "EntityId" , "name": "sourceEntityId", "optional" : true }
+						],
+						"returnTypes" : ["void"]
+					},
 					"shipUpgrades" : {
 						"type" : "function",
 						"description" : "Returns a JSON object containing information about the player's current ship upgrades including \"shipLevel\", \"maxFuel\", \"crewSize\" and a list of \"capabilities\".",
@@ -6387,40 +6437,6 @@
 						],
 						"returnTypes" : ["List<String>"]
 					},
-					"getProperty" : {
-						"type" : "function",
-						"description" : "Returns the value assigned to the specified generic player property. If there is no value set, returns default.",
-						"args" : [
-							{ "type" : "String", "name" : "name" },
-							{ "type" : "Json", "name" : "default" }
-						],
-						"returnTypes" : ["Json"]
-					},
-					"setProperty" : {
-						"type" : "function",
-						"description" : "Sets a generic player property to the specified value.",
-						"args" : [
-							{ "type" : "String", "name" : "name" },
-							{ "type" : "Json", "name" : "value" }
-						],
-						"returnTypes" : ["void"]
-					},
-					"addScannedObject" : {
-						"type" : "function",
-						"description" : "Adds the specified object to the player's scanned objects.",
-						"args" : [
-							{ "type" : "String", "name" : "name" }
-						],
-						"returnTypes" : ["void"]
-					},
-					"removeScannedObject" : {
-						"type" : "function",
-						"description" : "Removes the specified object from the player's scanned objects.",
-						"args" : [
-							{ "type" : "String", "name" : "name" }
-						],
-						"returnTypes" : ["void"]
-					},
 					"hasAcceptedQuest" : {
 						"type" : "function",
 						"description" : "Returns `true` if the player has accepted a quest (which may be active, completed, or failed) with the specified quest id and `false` otherwise.",
@@ -6822,12 +6838,12 @@
 						],
 						"returnTypes" : ["string"]
 					},
-					"addListItem" : {
+					"removeListItem" : {
 						"type" : "function",
 						"description" : "Removes a list item from a ListWidget at a specific index.",
 						"args" : [
 							{ "type" : "string", "name" : "widgetName" },
-							{ "type" : "void", "name" : "at" }
+							{ "type" : "int", "name" : "at" }
 						],
 						"returnTypes" : ["void"]
 					},
@@ -8189,6 +8205,10 @@
 			},
 			"self" : {
 				"description" : "Refers to the currently executing script's or object's context.",
+				"type" : "table"
+			},
+			"storage" : {
+				"description" : "Used to store variables that are localised to an actual object, not a class an object like a chair.",
 				"type" : "table"
 			}
 		}
